@@ -16,10 +16,15 @@ import firebase from "react-native-firebase";
 
 class IndexScreen extends Component {
   // will check whether someone is logged in or not
+  constructor() {
+    super();
+    this.unsubscriber = null;
+  }
+
   componentDidMount() {
     //we pass a callback to onAuthStateChanged
     //user is returned if logged in
-    firebase.auth().onAuthStateChanged(user => {
+    this.unsubscriber = firebase.auth().onAuthStateChanged(user => {
       if (user) {
         //logged in, so we need to move to the homeScreen
         this.props.navigation.navigate("Home", {
@@ -34,6 +39,12 @@ class IndexScreen extends Component {
     });
   }
 
+  componentWillUnmount() {
+    if (this.unsubscriber) {
+      this.unsubscriber();
+    }
+  }
+
   render() {
     return (
       <Container>
@@ -43,15 +54,29 @@ class IndexScreen extends Component {
   }
 }
 
-const AuthStack = createStackNavigator({
-  Login: LoginScreen,
-  SignUp: SignUpScreen
-});
+const AuthStack = createStackNavigator(
+  {
+    Login: LoginScreen,
+    SignUp: SignUpScreen
+  },
+  {
+    defaultNavigationOptions: {
+      header: null
+    }
+  }
+);
 
 export default createAppContainer(
-  createSwitchNavigator({
-    Index: IndexScreen,
-    Home: HomeScreen,
-    Auth: AuthStack
-  })
+  createSwitchNavigator(
+    {
+      Index: IndexScreen,
+      Home: HomeScreen,
+      Auth: AuthStack
+    },
+    {
+      defaultNavigationOptions: {
+        header: null
+      }
+    }
+  )
 );
