@@ -1,49 +1,57 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- * @flow
- */
+import React, { Component } from "react";
+import { Container, Spinner } from "native-base";
 
-import React, {Component} from 'react';
-import {Platform, StyleSheet, Text, View} from 'react-native';
+import LoginScreen from "./screens/loginScreen";
+import SignUpScreen from "./screens/signUpScreen";
+import HomeScreen from "./screens/homeScreen";
 
-const instructions = Platform.select({
-  ios: 'Press Cmd+R to reload,\n' + 'Cmd+D or shake for dev menu',
-  android:
-    'Double tap R on your keyboard to reload,\n' +
-    'Shake or press menu button for dev menu',
-});
+import {
+  createAppContainer,
+  createStackNavigator,
+  createSwitchNavigator
+} from "react-navigation";
 
-type Props = {};
-export default class App extends Component<Props> {
+//import firebase
+import firebase from "react-native-firebase";
+
+class IndexScreen extends Component {
+  // will check whether someone is logged in or not
+  componentDidMount() {
+    //we pass a callback to onAuthStateChanged
+    //user is returned if logged in
+    firebase.auth().onAuthStateChanged(user => {
+      if (user) {
+        //logged in, so we need to move to the homeScreen
+        this.props.navigation.navigate("Home", {
+          user
+        });
+        //we can pass the user object as param so that we can use on
+        //the home screen
+      } else {
+        //not logged in
+        this.props.navigation.navigate("Auth");
+      }
+    });
+  }
+
   render() {
     return (
-      <View style={styles.container}>
-        <Text style={styles.welcome}>Welcome to React Native!</Text>
-        <Text style={styles.instructions}>To get started, edit App.js</Text>
-        <Text style={styles.instructions}>{instructions}</Text>
-      </View>
+      <Container>
+        <Spinner color="blue" />
+      </Container>
     );
   }
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#F5FCFF',
-  },
-  welcome: {
-    fontSize: 20,
-    textAlign: 'center',
-    margin: 10,
-  },
-  instructions: {
-    textAlign: 'center',
-    color: '#333333',
-    marginBottom: 5,
-  },
+const AuthStack = createStackNavigator({
+  Login: LoginScreen,
+  SignUp: SignUpScreen
 });
+
+export default createAppContainer(
+  createSwitchNavigator({
+    Index: IndexScreen,
+    Home: HomeScreen,
+    Auth: AuthStack
+  })
+);
